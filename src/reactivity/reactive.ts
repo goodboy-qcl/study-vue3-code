@@ -1,3 +1,5 @@
+import { track, trigger } from "./effect";
+
 export function reactive (raw) {
   return new Proxy(raw, {
     // target: 当前的对象， key：用户访问的key
@@ -5,7 +7,7 @@ export function reactive (raw) {
       const res = Reflect.get(target, key);
 
       // 依赖收集
-      // do things...
+      track(target, key);
       // 返回访问的对象
       return res;
     },
@@ -13,8 +15,7 @@ export function reactive (raw) {
     set (target, key, value) {
       const res = Reflect.set(target, key, value);
       // 依赖收集
-      // do things...
-
+      trigger(target, key);
       // 返回设置的新对象
       return res;
     },
