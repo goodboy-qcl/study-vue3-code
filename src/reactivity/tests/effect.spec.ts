@@ -31,4 +31,37 @@ describe('effect', () => {
     expect(foo).toBe(12);
     expect(r).toBe('foo');
   });
+
+  // scheduler 测试
+  it('scheduler', () => {
+    // 1. 通过 effect 的第二个参数给定的 一个 scheduler 的函数
+    // 2. effect 第一次执行的时候还是会执行 fn
+    // 3. 当相应是对象 set 的时候， update 不会执行 fn， 而是执行 scheduler
+    // 4. 如果说当执行到 runner 的时候， 会再次执行 fn
+    let dummy;
+    let run: any;
+    const scheduler = jest.fn(() => {
+      run = runner;
+    });
+    const obj = reactive({foo: 1});
+    const runner = effect(
+      () => {
+        dummy = obj.foo;
+      },
+      { scheduler }
+    );
+    expect(scheduler).not.toHaveBeenCalled();
+    expect(dummy).toBe(1);
+    // 应在第一个触发器上调用 （should be called on first trigger）
+    obj.foo++
+    // 应该执行 scheduler
+    expect(scheduler).toHaveBeenCalledTimes(1);
+    // 还不应该运行 ( should not run yet )
+    expect(dummy).toBe(1);
+    // 手动执行 ( manually run )
+    run();
+    // 应该执行fn ( should have run )
+    expect(dummy).toBe(2);
+
+  });
 })
