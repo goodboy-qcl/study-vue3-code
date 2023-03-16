@@ -1,5 +1,5 @@
 import { reactive } from "../reactive";
-import { effect } from "../effect";
+import { effect, stop } from "../effect";
 describe('effect', () => {
   it('happy path', () => {
     const user = reactive({
@@ -63,5 +63,23 @@ describe('effect', () => {
     // 应该执行fn ( should have run )
     expect(dummy).toBe(2);
 
+  });
+
+  // stop 测试
+  it('stop', () => {
+    let dummy;
+    const obj = reactive({ prop: 1 });
+    const runner = effect(() => {
+      dummy = obj.prop;
+    });
+    obj.prop = 2;
+    expect(dummy).toBe(2);
+    stop(runner);
+    obj.prop = 3;
+    expect(dummy).toBe(2);
+    // 停止的效果应该仍然可以手动调用
+    // stopped effect should still be manually callable
+    runner();
+    expect(dummy).toBe(3);
   });
 })
