@@ -1,9 +1,14 @@
+import { extend } from "../shared";
+
 class ReactiveEffect {
   private _fn: any;
   deps = []; // 获取要清除的 effect
   active = true; // 控制是否清除过 stop
-  constructor (fn, public scheduler?) {
-    this._fn = fn
+  onStop?: () => void;
+  public scheduler: Function | undefined;
+  constructor (fn, scheduler?: Function) {
+    this._fn = fn;
+    this.scheduler = scheduler;
   }
   run () {
     activeEffect = this
@@ -12,6 +17,9 @@ class ReactiveEffect {
   stop () {
     if (this.active) {
       clearupEffect(this);
+      if (this.onStop) {
+        this.onStop();
+      }
       this.active = false;
     }
   }
@@ -39,6 +47,8 @@ export function track (target, key) {
     dep = new Set();
     depsMap.set(key, dep);
   }
+
+  if (!activeEffect) return;
   // 添加
   dep.add(activeEffect);
   activeEffect.deps.push(dep);
@@ -64,6 +74,10 @@ export function effect (fn, options: any = {}) {
   // const scheduler = options.scheduler;
   // 执行fn
   const _effect = new ReactiveEffect(fn, options.scheduler);
+  // _effect.onStop = options.onStop;
+  // 通过将 options 的值给到 _effect
+  // Object.assign(_effect, options);
+  extend(_effect, options);
 
   _effect.run();
 
