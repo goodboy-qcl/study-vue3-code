@@ -76,7 +76,7 @@ export function effect (fn, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler);
   // _effect.onStop = options.onStop;
   // 通过将 options 的值给到 _effect
-  // Object.assign(_effect, options);
+  // Object.assign(_effect, options); ==> extend
   extend(_effect, options);
 
   _effect.run();
